@@ -30,6 +30,7 @@
     const speedDisplayElement = document.querySelector('#ms');
     const resultsList = document.querySelector('#speedList');
     var myDiv = document.getElementById("myDiv");
+    var d = -50
 
     function startPitchDetection()
     {
@@ -50,13 +51,15 @@
                     frequencyDisplayElement.innerHTML = `${pitch}`;
                     const val = document.querySelector('input').value;
                     var z = Number(val);
+                    d = d + 50
                     x = 343/pitch
                     y = x*z
                     w = y-343
                     speedDisplayElement.innerHTML = `${w}`;
                     console.log(w);
-                    myDiv.innerHTML += w + "<br>";
-                }, 300);
+                    myDiv.innerHTML += w + " time (s) " + d / 1000 + "<br>";
+
+                }, 50);
             })
             .catch((err) =>
             {
