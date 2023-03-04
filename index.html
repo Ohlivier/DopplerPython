@@ -6,14 +6,21 @@
 </head>
 <body>
 <h1>HZ geluidsbron</h1>
-<input type="number" placeholder="Input number" onblur="getVal()">
+<input type="number" placeholder="Input number" id="hz" onblur="getVal()">
+<h1>Delay (ms)</h1>
+<input type="number" placeholder="Input number" id="delay" onblur="getVal()">
 <h1>Frequency (Hz)</h1>
 <h2 id="frequency">0.0</h2>
 <h1>Snelheid in m/s</h1>
 <h2 id="ms">0.0</h2>
 <div>
     <button onclick="startPitchDetection()">
-        Start Pitch Detection
+        Start
+    </button>
+</div>
+<div>
+    <button onclick="stopPitchDetection()">
+        Stop
     </button>
 </div>
 <h1>Resultaten</h1>
@@ -30,10 +37,14 @@
     const speedDisplayElement = document.querySelector('#ms');
     const resultsList = document.querySelector('#speedList');
     var myDiv = document.getElementById("myDiv");
-    var d = -50
+    var d = 0
+    let intervalId = null;
+
 
     function startPitchDetection()
     {
+        const valdelay = document.getElementById('delay').value;
+        var delnum = Number(valdelay);
         navigator.mediaDevices.getUserMedia ({audio: true})
             .then((stream) =>
             {
@@ -43,23 +54,26 @@
                 audioData = new Float32Array(analyserNode.fftSize);
                 corrolatedSignal = new Float32Array(analyserNode.fftSize);
 
-                setInterval(() => {
+                intervalId = setInterval(() => {
                     analyserNode.getFloatTimeDomainData(audioData);
 
                     let pitch = getAutocorrolatedPitch();
 
                     frequencyDisplayElement.innerHTML = `${pitch}`;
-                    const val = document.querySelector('input').value;
+                    const val = document.getElementById('hz').value;
+                    
                     var z = Number(val);
-                    d = d + 50
+                    
+                    
                     x = 343/pitch
                     y = x*z
                     w = y-343
                     speedDisplayElement.innerHTML = `${w}`;
                     console.log(w);
                     myDiv.innerHTML += w + " time (s) " + d / 1000 + "<br>";
+                    d = d + delnum
 
-                }, 50);
+                }, delnum);
             })
             .catch((err) =>
             {
@@ -99,6 +113,11 @@
         maximaMean /= maximaCount;
 
         return audioCtx.sampleRate / maximaMean;
+    }
+
+    function stopPitchDetection()
+    {
+        clearInterval(intervalId);
     }
 </script>
 </body>
