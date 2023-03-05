@@ -45,6 +45,16 @@
     {
         const valdelay = document.getElementById('delay').value;
         var delnum = Number(valdelay);
+        if (audioCtx === null) {
+            // the AudioContext hasn't been initialized yet
+            // prompt the user to interact with the page
+            const startAudioContextButton = document.querySelector('#start-audio-context-button');
+            startAudioContextButton.addEventListener('click', function() {
+                initializeAudioContext();
+                startPitchDetection();
+            }, { once: true });
+            return;
+        }
         navigator.mediaDevices.getUserMedia ({audio: true})
             .then((stream) =>
             {
