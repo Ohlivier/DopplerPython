@@ -27,11 +27,11 @@
 <div id="myDiv"></div>
 
 <script>
-    let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let audioCtx = null;
     let microphoneStream = null;
-    let analyserNode = audioCtx.createAnalyser()
-    let audioData = new Float32Array(analyserNode.fftSize);;
-    let corrolatedSignal = new Float32Array(analyserNode.fftSize);;
+    let analyserNode = null;
+    let audioData = null;
+    let corrolatedSignal = null;
     let localMaxima = new Array(10);
     const frequencyDisplayElement = document.querySelector('#frequency');
     const speedDisplayElement = document.querySelector('#ms');
@@ -40,21 +40,37 @@
     var d = 0
     let intervalId = null;
 
+    function initializeAudioContext() {
+        // create an AudioContext object
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // create a dummy source node to start the AudioContext
+        const sourceNode = audioCtx.createBufferSource();
+        sourceNode.start();
+
+        // create an AnalyserNode object
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 2048;
+
+        // create a buffer for the audio data
+        audioData = new Float32Array(analyserNode.fftSize);
+        corrolatedSignal = new Float32Array(analyserNode.fftSize);
+
+        // connect the source node to the analyser node
+        sourceNode.connect(analyserNode);
+    }
+
 
     function startPitchDetection()
     {
         const valdelay = document.getElementById('delay').value;
         var delnum = Number(valdelay);
-        if (audioCtx === null) {
+                if (audioCtx === null) {
             // the AudioContext hasn't been initialized yet
             // prompt the user to interact with the page
-            const startAudioContextButton = document.querySelector('#start-audio-context-button');
-            startAudioContextButton.addEventListener('click', function() {
-                initializeAudioContext();
-                startPitchDetection();
-            }, { once: true });
-            return;
+            initializeAudioContext();
         }
+        
         navigator.mediaDevices.getUserMedia ({audio: true})
             .then((stream) =>
             {
